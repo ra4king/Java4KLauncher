@@ -1,7 +1,10 @@
 package com.java4k.launcher;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -48,7 +51,17 @@ public class Java4KLauncher extends Application {
 	private GameInfo currentGame;
 	
 	private List<GameInfo> loadGameList(String file) {
-		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(file).openStream()))) {
+		try {
+			InputStream inputStream;
+			try {
+				inputStream = new URL(file).openStream();
+			}
+			catch(MalformedURLException exc) {
+				inputStream = new FileInputStream(file);
+			}
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+			
 			List<GameInfo> gameList = new ArrayList<>();
 			
 			String line;
@@ -57,8 +70,9 @@ public class Java4KLauncher extends Application {
 				lineNum++;
 				
 				line = line.trim();
-				if(line.isEmpty())
+				if(line.isEmpty()) {
 					continue;
+				}
 				
 				int i = line.indexOf(' ');
 				if(i == -1) {
@@ -77,7 +91,8 @@ public class Java4KLauncher extends Application {
 			}
 			
 			return gameList;
-		} catch(Exception exc) {
+		}
+		catch(Exception exc) {
 			exc.printStackTrace();
 			return null;
 		}
@@ -149,7 +164,8 @@ public class Java4KLauncher extends Application {
 			gameTab.setText(game.name);
 			gameTab.setContent(currentGame.game);
 			currentGame.game.run();
-		} catch(Exception exc) {
+		}
+		catch(Exception exc) {
 			exc.printStackTrace();
 		}
 	}
