@@ -17,6 +17,13 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Java4KLauncher extends Application {
+	long lastTime;
+	long accumulator;
+	
+	static final long NANOS = 1_000_000_000;
+	static final long FPS = 60;
+	static final long FRAME_TIME = NANOS / FPS;
+	
 	public static void main(String[] args) throws Exception {
 		launch(args);
 	}
@@ -45,10 +52,19 @@ public class Java4KLauncher extends Application {
 			
 			game.init();
 			
+			lastTime = System.nanoTime();
+			
 			new AnimationTimer() {
 				public void handle(long nanoTime) {
-					GraphicsContext graphics = canvas.getGraphicsContext2D();
-					game.render(graphics);
+					long delta = nanoTime - lastTime;
+					lastTime = nanoTime;
+					accumulator += delta;
+					
+					while (accumulator > FRAME_TIME) {
+						GraphicsContext graphics = canvas.getGraphicsContext2D();
+						game.render(graphics);
+						accumulator -= FRAME_TIME;
+					}
 				}
 			}.start();
 			
