@@ -19,54 +19,54 @@ public abstract class Game extends JComponent implements Runnable {
 		addMouseListener(new MouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				mouseEvent(e);
+				mouseEvent(MouseEvent.MOUSE_CLICKED, e);
 			}
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
-				mouseEvent(e);
+				mouseEvent(MouseEvent.MOUSE_PRESSED, e);
 			}
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				mouseEvent(e);
+				mouseEvent(MouseEvent.MOUSE_RELEASED, e);
 			}
 			
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				mouseEvent(e);
+				mouseEvent(MouseEvent.MOUSE_ENTERED, e);
 			}
 			
 			@Override
 			public void mouseExited(MouseEvent e) {
-				mouseEvent(e);
+				mouseEvent(MouseEvent.MOUSE_EXITED, e);
 			}
 		});
 		addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				mouseEvent(e);
+				mouseEvent(MouseEvent.MOUSE_DRAGGED, e);
 			}
 			
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				mouseEvent(e);
+				mouseEvent(MouseEvent.MOUSE_MOVED, e);
 			}
 		});
 		addKeyListener(new KeyListener() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				keyEvent(e);
+				keyEvent(KeyEvent.KEY_TYPED, e);
 			}
 			
 			@Override
 			public void keyPressed(KeyEvent e) {
-				keyEvent(e);
+				keyEvent(KeyEvent.KEY_PRESSED, e);
 			}
 			
 			@Override
 			public void keyReleased(KeyEvent e) {
-				keyEvent(e);
+				keyEvent(KeyEvent.KEY_RELEASED, e);
 			}
 		});
 		
@@ -81,9 +81,9 @@ public abstract class Game extends JComponent implements Runnable {
 		}
 	}
 	
-	public void keyEvent(KeyEvent keyEvent) {}
+	public void keyEvent(int evenType, KeyEvent keyEvent) {}
 	
-	public void mouseEvent(MouseEvent mouseEvent) {}
+	public void mouseEvent(int eventType, MouseEvent mouseEvent) {}
 	
 	public void init() {}
 	
