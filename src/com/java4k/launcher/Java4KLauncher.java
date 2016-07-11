@@ -238,6 +238,10 @@ public class Java4KLauncher extends Application {
 	
 	// TODO: set a secure context
 	private URLClassLoader loadJar(String jarUrl) throws Exception {
-		return new URLClassLoader(new URL[] { new URL(jarUrl) });
+		try {
+			return new URLClassLoader(new URL[] { new URL(jarUrl) });
+		} catch(Exception exc) {
+			return new URLClassLoader(new URL[] { Java4KLauncher.class.getResource(jarUrl) });
+		}
 	}
 }

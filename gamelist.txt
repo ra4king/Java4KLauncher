@@ -1,2 +1,2 @@
-file:///C:/Users/ra4ki_000/Dropbox/Documents/Programming/Java/Java4KLauncher/out/artifacts/Test/Test.jar com.java4k.test.MyGame My Game
-file:///C:/Users/ra4ki_000/Dropbox/Documents/Programming/Java/Java4KLauncher/out/artifacts/Test/Test.jar com.java4k.test.MyApplet My Applet
+out/artifacts/Test/Test.jar com.java4k.test.MyGame My Game
+out/artifacts/Test/Test.jar com.java4k.test.MyApplet My Applet
