@@ -33,6 +33,7 @@ public class Java4KLauncher extends Application {
 		private String jarUrl;
 		private String className;
 		private String name;
+		private Game game;
 		
 		GameInfo(String jarUrl, String className, String name) {
 			this.jarUrl = jarUrl;
@@ -44,7 +45,7 @@ public class Java4KLauncher extends Application {
 	private static HashMap<String, URLClassLoader> cachedJars = new HashMap<>();
 	
 	private List<GameInfo> gameList;
-	private Game currentGame;
+	private GameInfo currentGame;
 	
 	private List<GameInfo> loadGameList(String file) {
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(file).openStream()))) {
@@ -125,8 +126,13 @@ public class Java4KLauncher extends Application {
 	}
 	
 	private void loadGame(GameInfo game, Tab gameTab) {
+		if(game == currentGame) {
+			return;
+		}
+		
 		if(currentGame != null) {
-			currentGame.stop();
+			currentGame.game.stop();
+			currentGame.game = null;
 		}
 		
 		try {
@@ -134,16 +140,21 @@ public class Java4KLauncher extends Application {
 			if(cachedJars.containsKey(game.jarUrl)) {
 				classLoader = cachedJars.get(game.jarUrl);
 			} else {
-				classLoader = new URLClassLoader(new URL[] { new URL(game.jarUrl) });
+				classLoader = loadJar(game.jarUrl);
 				cachedJars.put(game.jarUrl, classLoader);
 			}
 			
-			currentGame = (Game)classLoader.loadClass(game.className).newInstance();
+			currentGame = game;
+			currentGame.game = (Game)classLoader.loadClass(game.className).newInstance();
 			gameTab.setText(game.name);
-			gameTab.setContent(currentGame);
-			currentGame.run();
+			gameTab.setContent(currentGame.game);
+			currentGame.game.run();
 		} catch(Exception exc) {
 			exc.printStackTrace();
 		}
+	}
+	
+	private URLClassLoader loadJar(String jarUrl) throws Exception {
+		return new URLClassLoader(new URL[] { new URL(jarUrl) });
 	}
 }
