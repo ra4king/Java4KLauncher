@@ -25,6 +25,7 @@ public abstract class Game extends JComponent implements Runnable, MouseListener
 		
 		while(true) {
 			render(g);
+			tick();
 			getGraphics().drawImage(image, 0, 0, null);
 		}
 	}
@@ -60,6 +61,8 @@ public abstract class Game extends JComponent implements Runnable, MouseListener
 	public void mouseDragged(MouseEvent e) {}
 	
 	public abstract void init();
+	
+	public abstract void tick();
 	
 	public abstract void render(Graphics2D g);
 }
