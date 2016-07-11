@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.JComponent;
 
@@ -14,59 +15,72 @@ import javax.swing.JComponent;
  * @author Roi Atalla
  */
 public abstract class Game extends JComponent implements Runnable {
+	private static class Pair<A, B> {
+		A a;
+		B b;
+		
+		Pair(A a, B b) {
+			this.a = a;
+			this.b = b;
+		}
+	}
+	
+	private ConcurrentLinkedQueue<Pair<Integer, MouseEvent>> mouseEventQueue = new ConcurrentLinkedQueue<>();
+	private ConcurrentLinkedQueue<Pair<Integer, KeyEvent>> keyEventQueue = new ConcurrentLinkedQueue<>();
+	
 	@Override
 	public void run() {
 		addMouseListener(new MouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				mouseEvent(MouseEvent.MOUSE_CLICKED, e);
+				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_CLICKED, e));
 			}
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
-				mouseEvent(MouseEvent.MOUSE_PRESSED, e);
+				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_PRESSED, e));
 			}
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				mouseEvent(MouseEvent.MOUSE_RELEASED, e);
+				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_RELEASED, e));
 			}
 			
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				mouseEvent(MouseEvent.MOUSE_ENTERED, e);
+				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_ENTERED, e));
 			}
 			
 			@Override
 			public void mouseExited(MouseEvent e) {
-				mouseEvent(MouseEvent.MOUSE_EXITED, e);
+				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_EXITED, e));
 			}
 		});
 		addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				mouseEvent(MouseEvent.MOUSE_DRAGGED, e);
+				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_DRAGGED, e));
 			}
 			
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				mouseEvent(MouseEvent.MOUSE_MOVED, e);
+				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_MOVED, e));
 			}
 		});
 		addKeyListener(new KeyListener() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				keyEvent(KeyEvent.KEY_TYPED, e);
+				keyEventQueue.add(new Pair<>(KeyEvent.KEY_TYPED, e));
 			}
 			
 			@Override
 			public void keyPressed(KeyEvent e) {
-				keyEvent(KeyEvent.KEY_PRESSED, e);
+				keyEventQueue.add(new Pair<>(KeyEvent.KEY_PRESSED, e));
 			}
 			
 			@Override
 			public void keyReleased(KeyEvent e) {
-				keyEvent(KeyEvent.KEY_RELEASED, e);
+				keyEventQueue.add(new Pair<>(KeyEvent.KEY_RELEASED, e));
 			}
 		});
 		
@@ -76,8 +90,21 @@ public abstract class Game extends JComponent implements Runnable {
 		Graphics2D g = (Graphics2D)image.getGraphics();
 		
 		while(true) {
+			processEvents();
 			render(g);
 			getGraphics().drawImage(image, 0, 0, null);
+		}
+	}
+	
+	protected void processEvents() {
+		while(!mouseEventQueue.isEmpty()) {
+			Pair<Integer, MouseEvent> pair = mouseEventQueue.poll();
+			mouseEvent(pair.a, pair.b);
+		}
+		
+		while(!keyEventQueue.isEmpty()) {
+			Pair<Integer, KeyEvent> pair = keyEventQueue.poll();
+			keyEvent(pair.a, pair.b);
 		}
 	}
 	
