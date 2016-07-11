@@ -11,16 +11,6 @@ import javafx.scene.input.MouseEvent;
  * @author Roi Atalla
  */
 public abstract class Game extends Canvas {
-	private static class Pair<A, B> {
-		A a;
-		B b;
-		
-		Pair(A a, B b) {
-			this.a = a;
-			this.b = b;
-		}
-	}
-	
 	public Game() {
 		super(800, 600);
 	}
