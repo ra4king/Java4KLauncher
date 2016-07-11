@@ -1,20 +1,16 @@
 package com.java4k.core;
 
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.swing.JComponent;
+import javafx.animation.AnimationTimer;
+import javafx.event.EventType;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 
 /**
  * @author Roi Atalla
  */
-public abstract class Game extends JComponent implements Runnable {
+public abstract class Game extends Canvas {
 	private static class Pair<A, B> {
 		A a;
 		B b;
@@ -25,94 +21,37 @@ public abstract class Game extends JComponent implements Runnable {
 		}
 	}
 	
-	private ConcurrentLinkedQueue<Pair<Integer, MouseEvent>> mouseEventQueue = new ConcurrentLinkedQueue<>();
-	private ConcurrentLinkedQueue<Pair<Integer, KeyEvent>> keyEventQueue = new ConcurrentLinkedQueue<>();
+	public Game() {
+		super(800, 600);
+	}
 	
-	@Override
 	public void run() {
-		addMouseListener(new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_CLICKED, e));
-			}
-			
-			@Override
-			public void mousePressed(MouseEvent e) {
-				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_PRESSED, e));
-			}
-			
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_RELEASED, e));
-			}
-			
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_ENTERED, e));
-			}
-			
-			@Override
-			public void mouseExited(MouseEvent e) {
-				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_EXITED, e));
-			}
-		});
-		addMouseMotionListener(new MouseMotionListener() {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_DRAGGED, e));
-			}
-			
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				mouseEventQueue.add(new Pair<>(MouseEvent.MOUSE_MOVED, e));
-			}
-		});
-		addKeyListener(new KeyListener() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-				keyEventQueue.add(new Pair<>(KeyEvent.KEY_TYPED, e));
-			}
-			
-			@Override
-			public void keyPressed(KeyEvent e) {
-				keyEventQueue.add(new Pair<>(KeyEvent.KEY_PRESSED, e));
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e) {
-				keyEventQueue.add(new Pair<>(KeyEvent.KEY_RELEASED, e));
-			}
-		});
+		addEventHandler(MouseEvent.MOUSE_MOVED, e -> mouseEvent(MouseEvent.MOUSE_MOVED, e));
+		addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> mouseEvent(MouseEvent.MOUSE_DRAGGED, e));
+		addEventHandler(MouseEvent.MOUSE_CLICKED, e -> mouseEvent(MouseEvent.MOUSE_CLICKED, e));
+		addEventHandler(MouseEvent.MOUSE_PRESSED, e -> mouseEvent(MouseEvent.MOUSE_PRESSED, e));
+		addEventHandler(MouseEvent.MOUSE_RELEASED, e -> mouseEvent(MouseEvent.MOUSE_RELEASED, e));
+		addEventHandler(MouseEvent.MOUSE_ENTERED, e -> mouseEvent(MouseEvent.MOUSE_ENTERED, e));
+		addEventHandler(MouseEvent.MOUSE_EXITED, e -> mouseEvent(MouseEvent.MOUSE_EXITED, e));
+		
+		addEventHandler(KeyEvent.KEY_PRESSED, e -> keyEvent(KeyEvent.KEY_PRESSED, e));
+		addEventHandler(KeyEvent.KEY_RELEASED, e -> keyEvent(KeyEvent.KEY_RELEASED, e));
+		addEventHandler(KeyEvent.KEY_TYPED, e -> keyEvent(KeyEvent.KEY_TYPED, e));
 		
 		init();
 		
-		BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-		Graphics2D g = (Graphics2D)image.getGraphics();
-		
-		while(true) {
-			processEvents();
-			render(g);
-			getGraphics().drawImage(image, 0, 0, null);
-		}
+		new AnimationTimer() {
+			public void handle(long nanoTime) {
+				render(getGraphicsContext2D());
+			}
+		}.start();
 	}
 	
-	protected void processEvents() {
-		while(!mouseEventQueue.isEmpty()) {
-			Pair<Integer, MouseEvent> pair = mouseEventQueue.poll();
-			mouseEvent(pair.a, pair.b);
-		}
-		
-		while(!keyEventQueue.isEmpty()) {
-			Pair<Integer, KeyEvent> pair = keyEventQueue.poll();
-			keyEvent(pair.a, pair.b);
-		}
-	}
+	public void mouseEvent(EventType<MouseEvent> type, MouseEvent mouseEvent) {}
 	
-	public void keyEvent(int evenType, KeyEvent keyEvent) {}
+	public void keyEvent(EventType<KeyEvent> type, KeyEvent keyEvent) {}
 	
-	public void mouseEvent(int eventType, MouseEvent mouseEvent) {}
+	public abstract void init();
 	
-	public void init() {}
-	
-	public void render(Graphics2D g) {}
+	public abstract void render(GraphicsContext g);
 }
