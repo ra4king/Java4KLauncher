@@ -12,10 +12,11 @@ import javax.swing.JComponent;
 /**
  * @author Roi Atalla
  */
-public abstract class Game extends JComponent implements Runnable, MouseListener, KeyListener {
+public abstract class Game extends JComponent implements Runnable, MouseListener, KeyListener, MouseMotionListener {
 	public void run() {
 		addMouseListener(this);
 		addKeyListener(this);
+		addMouseMotionListener(this);
 		
 		init();
 		
@@ -51,6 +52,12 @@ public abstract class Game extends JComponent implements Runnable, MouseListener
 	
 	@Override
 	public void mouseExited(MouseEvent e) {}
+	
+	@Override
+	public void mouseMoved(MouseEvent e) {}
+	
+	@Override
+	public void mouseDragged(MouseEvent e) {}
 	
 	public abstract void init();
 	
