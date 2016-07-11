@@ -11,6 +11,7 @@ import javafx.scene.input.MouseEvent;
  * @author Roi Atalla
  */
 public abstract class Game extends Canvas {
+	private AnimationTimer timer;
 	public Game() {
 		super(800, 600);
 	}
@@ -30,11 +31,16 @@ public abstract class Game extends Canvas {
 		
 		init();
 		
-		new AnimationTimer() {
+		timer = new AnimationTimer() {
 			public void handle(long nanoTime) {
 				render(getGraphicsContext2D());
 			}
-		}.start();
+		};
+		timer.start();
+	}
+	
+	public void stop() {
+		timer.stop();
 	}
 	
 	public void mouseEvent(EventType<MouseEvent> type, MouseEvent mouseEvent) {}
