@@ -1,38 +1,58 @@
 package com.java4k.launcher;
 
-import java.awt.Dimension;
 import java.net.URL;
 import java.net.URLClassLoader;
-
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
+import java.util.List;
 
 import com.java4k.core.Game;
 
-/**
- * @author Roi Atalla
- */
-public class Java4KLauncher {
+import javafx.animation.AnimationTimer;
+import javafx.application.Application;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.InputEvent;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+
+public class Java4KLauncher extends Application {
 	public static void main(String[] args) throws Exception {
-		if(args.length != 3) {
+		launch(args);
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		List<String> args = this.getParameters().getUnnamed();
+		if (args.size() != 3) {
 			System.out.println("Usage: java -jar Java4KLauncher.jar JarURL my.main.class");
 			return;
 		}
-		
-		URLClassLoader classLoader = new URLClassLoader(new URL[] { new URL(args[0]) });
-		Game game = (Game)classLoader.loadClass(args[1]).newInstance();
-		
-		JFrame frame = new JFrame(args[2]);
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		game.setMinimumSize(new Dimension(800, 600));
-		game.setPreferredSize(new Dimension(800, 600));
-		game.setMaximumSize(new Dimension(800, 600));
-		frame.add(game);
-		frame.pack();
-		frame.setResizable(false);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-		
-		new Thread(game).start();
+
+		try(URLClassLoader classLoader = new URLClassLoader(new URL[] { new URL(args.get(0)) })) {
+			final Game game = (Game) classLoader.loadClass(args.get(1)).newInstance();
+			
+			primaryStage.setTitle(args.get(2));
+			
+			Group root = new Group();
+			Scene scene = new Scene(root, Color.BLACK);
+			primaryStage.setScene(scene);
+			
+			final Canvas canvas = new Canvas(800, 600);
+			root.getChildren().add(canvas);
+			
+			canvas.addEventHandler(InputEvent.ANY, game);
+			
+			game.init();
+			
+			new AnimationTimer() {
+				public void handle(long nanoTime) {
+					GraphicsContext graphics = canvas.getGraphicsContext2D();
+					game.render(graphics);
+				}
+			}.start();
+			
+			primaryStage.show();
+		}
 	}
 }
