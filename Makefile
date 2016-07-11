@@ -11,7 +11,7 @@ all:
 	rm -rf $(DIR)
 
 run:
-	java -jar $(OUTPUT) $(ARGS)
+	java -jar $(OUTPUT) $(gamefile)
 
 clean:
 	rm -rf $(DIR) $(OUTPUT)
