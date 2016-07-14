@@ -23,7 +23,11 @@ import javafx.application.Application;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
@@ -151,8 +155,8 @@ public class Java4KLauncher extends Application {
 			return gameList;
 		}
 		catch(Exception exc) {
-			exc.printStackTrace();
-			return null;
+			new Alert(AlertType.ERROR, "Error while loading game list.", new ButtonType("Ok.", ButtonData.OK_DONE)).showAndWait();
+			throw new RuntimeException(exc);
 		}
 	}
 	
@@ -167,6 +171,9 @@ public class Java4KLauncher extends Application {
 					applet.stop();
 					applet.destroy();
 				}
+				
+				gameTab.setText("No game selected");
+				gameTab.setContent(new Rectangle(800, 600));
 			}
 			
 			URLClassLoader classLoader;
@@ -234,6 +241,7 @@ public class Java4KLauncher extends Application {
 		}
 		catch(Exception exc) {
 			exc.printStackTrace();
+			new Alert(AlertType.ERROR, "Error while loading game " + game.name, new ButtonType("Ok.", ButtonData.OK_DONE)).showAndWait();
 		}
 	}
 	
