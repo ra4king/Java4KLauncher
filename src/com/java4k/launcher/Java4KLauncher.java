@@ -82,10 +82,9 @@ public class Java4KLauncher extends Application {
 		controlTab.setClosable(false);
 		
 		VBox buttonsBox = new VBox();
-		for(int i = 0; i < gameList.size(); i++) {
-			GameInfo game = gameList.get(i);
-			Button b = new Button(game.name);
-			b.setOnAction(e -> loadGame(game, gameTab));
+		for(GameInfo gameInfo : gameList) {
+			Button b = new Button(gameInfo.name);
+			b.setOnAction(e -> loadGame(gameInfo, gameTab));
 			buttonsBox.getChildren().add(b);
 			VBox.setMargin(b, new Insets(10, 0, 0, 10));
 		}
@@ -181,20 +180,22 @@ public class Java4KLauncher extends Application {
 			Object object = classLoader.loadClass(game.className).newInstance();
 			if(object instanceof Game) {
 				Game newGame = (Game)object;
-				newGame.addEventHandler(MouseEvent.MOUSE_MOVED, e -> newGame.mouseEvent(MouseEvent.MOUSE_MOVED, e));
-				newGame.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> newGame.mouseEvent(MouseEvent.MOUSE_DRAGGED, e));
-				newGame.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> newGame.mouseEvent(MouseEvent.MOUSE_CLICKED, e));
-				newGame.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> newGame.mouseEvent(MouseEvent.MOUSE_PRESSED, e));
-				newGame.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> newGame.mouseEvent(MouseEvent.MOUSE_RELEASED, e));
-				newGame.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> newGame.mouseEvent(MouseEvent.MOUSE_ENTERED, e));
-				newGame.addEventHandler(MouseEvent.MOUSE_EXITED, e -> newGame.mouseEvent(MouseEvent.MOUSE_EXITED, e));
-				newGame.addEventHandler(KeyEvent.KEY_PRESSED, e -> newGame.keyEvent(KeyEvent.KEY_PRESSED, e));
-				newGame.addEventHandler(KeyEvent.KEY_RELEASED, e -> newGame.keyEvent(KeyEvent.KEY_RELEASED, e));
-				newGame.addEventHandler(KeyEvent.KEY_TYPED, e -> newGame.keyEvent(KeyEvent.KEY_TYPED, e));
-				newGame.init();
 				
 				gameTab.setText(game.name);
 				gameTab.setContent(newGame);
+				
+				newGame.addEventHandler(MouseEvent.ANY, (e) -> newGame.requestFocus());
+				newGame.addEventHandler(MouseEvent.MOUSE_MOVED, newGame::mouseEvent);
+				newGame.addEventHandler(MouseEvent.MOUSE_DRAGGED, newGame::mouseEvent);
+				newGame.addEventHandler(MouseEvent.MOUSE_CLICKED, newGame::mouseEvent);
+				newGame.addEventHandler(MouseEvent.MOUSE_PRESSED, newGame::mouseEvent);
+				newGame.addEventHandler(MouseEvent.MOUSE_RELEASED, newGame::mouseEvent);
+				newGame.addEventHandler(MouseEvent.MOUSE_ENTERED, newGame::mouseEvent);
+				newGame.addEventHandler(MouseEvent.MOUSE_EXITED, newGame::mouseEvent);
+				newGame.addEventHandler(KeyEvent.KEY_PRESSED, newGame::keyEvent);
+				newGame.addEventHandler(KeyEvent.KEY_RELEASED, newGame::keyEvent);
+				newGame.addEventHandler(KeyEvent.KEY_TYPED, newGame::keyEvent);
+				newGame.init();
 				
 				currentGame = newGame;
 			} else if(object instanceof Applet) {

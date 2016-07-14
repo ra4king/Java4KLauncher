@@ -1,6 +1,5 @@
 package com.java4k.core;
 
-import javafx.event.EventType;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
@@ -14,9 +13,9 @@ public abstract class Game extends Canvas {
 		super(800, 600);
 	}
 	
-	public void mouseEvent(EventType<MouseEvent> type, MouseEvent mouseEvent) {}
+	public void mouseEvent(MouseEvent mouseEvent) {}
 	
-	public void keyEvent(EventType<KeyEvent> type, KeyEvent keyEvent) {}
+	public void keyEvent(KeyEvent keyEvent) {}
 	
 	public abstract void init();
 	
