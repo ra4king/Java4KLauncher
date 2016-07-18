@@ -1,2 +1,2 @@
-out/artifacts/Test/Test.jar com.java4k.test.MyGame My Game
-out/artifacts/Test/Test.jar com.java4k.test.MyApplet My Applet
+out/artifacts/Test/Test.jar com.java4k.test.MyGame http://www.java4k.com My Game
+out/artifacts/Test/Test.jar com.java4k.test.MyApplet http://www.google.com My Applet

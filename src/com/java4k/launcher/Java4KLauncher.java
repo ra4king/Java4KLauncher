@@ -13,6 +13,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.swing.JPanel;
 
@@ -20,21 +21,23 @@ import com.java4k.core.Game;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 /**
@@ -49,18 +52,26 @@ public class Java4KLauncher extends Application {
 		private String jarUrl;
 		private String className;
 		private String name;
+		private String pageUrl;
 		
-		GameInfo(String jarUrl, String className, String name) {
+		GameInfo(String jarUrl, String className, String name, String pageUrl) {
 			this.jarUrl = jarUrl;
 			this.className = className;
 			this.name = name;
+			this.pageUrl = pageUrl;
+		}
+		
+		@Override
+		public String toString() {
+			return name;
 		}
 	}
 	
 	private static HashMap<String, URLClassLoader> cachedJars = new HashMap<>();
 	
-	private List<GameInfo> gameList;
 	private Object currentGame;
+	public static final int WIDTH = 1280;
+	public static final int HEIGHT = 800;
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -70,36 +81,47 @@ public class Java4KLauncher extends Application {
 			System.exit(0);
 		}
 		
-		gameList = loadGameList(args.get(0));
+		List<GameInfo> gameList = loadGameList(args.get(0));
 		
 		primaryStage.setTitle("Java4K Launcher");
 		primaryStage.setResizable(false);
-		primaryStage.setOnCloseRequest(e -> System.exit(0));
+		primaryStage.setOnCloseRequest(e -> Platform.exit());
 		
 		TabPane tabPane = new TabPane();
 		
 		Tab gameTab = new Tab("No game selected");
 		gameTab.setClosable(false);
-		gameTab.setContent(new Rectangle(800, 600));
+		gameTab.setContent(new Rectangle(WIDTH, HEIGHT, Color.WHITESMOKE));
 		
 		Tab controlTab = new Tab("Game Selection");
 		controlTab.setClosable(false);
 		
-		VBox buttonsBox = new VBox();
-		for(GameInfo gameInfo : gameList) {
-			Button b = new Button(gameInfo.name);
-			b.setOnAction(e -> loadGame(gameInfo, gameTab));
-			buttonsBox.getChildren().add(b);
-			VBox.setMargin(b, new Insets(10, 0, 0, 10));
-		}
+		final int listWidth = 200;
 		
-		controlTab.setContent(buttonsBox);
+		WebView webView = new WebView();
+		webView.setMinWidth(WIDTH - listWidth);
+		WebEngine webEngine = webView.getEngine();
+		
+		ListView<GameInfo> gameListView = new ListView<>();
+		gameListView.setMinWidth(listWidth);
+		gameListView.getItems().addAll(gameList);
+		gameListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			loadGame(newValue, gameTab);
+			webEngine.load(newValue.pageUrl);
+		});
+		
+		HBox hBox = new HBox(gameListView, webView);
+		hBox.setMinWidth(WIDTH);
+		hBox.setPrefWidth(WIDTH);
+		hBox.setMinHeight(HEIGHT);
+		hBox.setPrefHeight(HEIGHT);
+		controlTab.setContent(hBox);
 		
 		tabPane.getTabs().add(controlTab);
 		tabPane.getTabs().add(gameTab);
 		
 		primaryStage.setScene(new Scene(tabPane, Color.BLACK));
-		
+		primaryStage.sizeToScene();
 		primaryStage.show();
 		
 		new AnimationTimer() {
@@ -112,7 +134,7 @@ public class Java4KLauncher extends Application {
 		}.start();
 	}
 	
-	private List<GameInfo> loadGameList(String file) {
+	private static List<GameInfo> loadGameList(String file) {
 		try {
 			InputStream inputStream;
 			try {
@@ -128,28 +150,20 @@ public class Java4KLauncher extends Application {
 			
 			String line;
 			int lineNum = 0;
-			while((line = reader.readLine()) != null) {
-				lineNum++;
-				
-				line = line.trim();
-				if(line.isEmpty()) {
-					continue;
+			try {
+				while((line = reader.readLine()) != null) {
+					lineNum++;
+					
+					Scanner scanner = new Scanner(line);
+					
+					String jar = scanner.next();
+					String className = scanner.next();
+					String pageUrl = scanner.next();
+					String name = scanner.nextLine();
+					gameList.add(new GameInfo(jar, className, name, pageUrl));
 				}
-				
-				int i = line.indexOf(' ');
-				if(i == -1) {
-					throw new IllegalArgumentException("Incorrect formatting on line " + lineNum);
-				}
-				
-				int i2 = line.indexOf(' ', i + 1);
-				if(i2 == -1) {
-					throw new IllegalArgumentException("Incorrect formatting on line " + lineNum);
-				}
-				
-				String jar = line.substring(0, i).trim();
-				String className = line.substring(i + 1, i2).trim();
-				String name = line.substring(i2 + 1).trim();
-				gameList.add(new GameInfo(jar, className, name));
+			} catch(Exception e) {
+				throw new IllegalArgumentException("Incorrect formatting on line " + lineNum, e);
 			}
 			
 			return gameList;
@@ -173,7 +187,7 @@ public class Java4KLauncher extends Application {
 				}
 				
 				gameTab.setText("No game selected");
-				gameTab.setContent(new Rectangle(800, 600));
+				gameTab.setContent(new Rectangle(WIDTH, HEIGHT, Color.WHITESMOKE));
 			}
 			
 			URLClassLoader classLoader;
@@ -207,7 +221,7 @@ public class Java4KLauncher extends Application {
 				currentGame = newGame;
 			} else if(object instanceof Applet) {
 				Applet applet = (Applet)object;
-				applet.setPreferredSize(new Dimension(800, 600));
+				applet.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 				
 				JPanel panel = new JPanel() {
 					private boolean init = false;
@@ -222,17 +236,14 @@ public class Java4KLauncher extends Application {
 						super.paintComponent(g);
 					}
 				};
-				panel.setPreferredSize(new Dimension(800, 600));
+				panel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 				panel.add(applet);
 				
 				SwingNode swingNode = new SwingNode();
-				swingNode.prefWidth(800);
-				swingNode.prefHeight(600);
-				swingNode.setContent(panel);
 				
 				gameTab.setText(game.name);
 				gameTab.setContent(swingNode);
-				currentGame = null;
+				swingNode.setContent(panel);
 				
 				currentGame = applet;
 			} else {
